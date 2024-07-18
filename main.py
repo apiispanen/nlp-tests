@@ -6,7 +6,13 @@ from sklearn.naive_bayes import MultinomialNB
 from sklearn.pipeline import make_pipeline
 
 # Load spaCy model for NLP tasks
-nlp = spacy.load('en_core_web_sm')
+
+try:
+    nlp = spacy.load('en_core_web_sm')
+except OSError:
+    print("Downloading 'en_core_web_sm' model...")
+    spacy.cli.download('en_core_web_sm')
+    nlp = spacy.load('en_core_web_sm')
 
 # Sample data for classification (replace with your actual data)
 # # Typically, this data would be obtained through an ETL/ELT process.
@@ -41,12 +47,12 @@ nlp = spacy.load('en_core_web_sm')
 # engine = create_engine('sqlite:///database.db')
 # data.to_sql('text_data', engine, if_exists='replace')
 
-
 # Instead, let's just cheat and use some sample data for demonstration purposes:
 from text_file import texts
 
 # Corresponding labels for the classification data
 from text_file import labels
+import spacy
 
 
 ################# STEP 0: Build out a pipeline for text classification
@@ -72,7 +78,7 @@ def main():
             entities = [(ent.text, ent.label_) for ent in doc.ents]
             
             if entities:
-                st.write("Extracted Entities:")
+                st.header("Extracted Entities:")
                 for entity in entities:
                     st.write(f"{entity[0]} ({entity[1]})")
                     
