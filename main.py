@@ -52,15 +52,18 @@ from text_file import texts
 
 # Corresponding labels for the classification data
 from text_file import labels
-import spacy
+
 
 
 ################# STEP 0: Build out a pipeline for text classification
 
 # Train a simple classification model using a pipeline that includes
 # TF-IDF vectorization and a Multinomial Naive Bayes classifier.
-# model = make_pipeline(TfidfVectorizer(), MultinomialNB())
-# model.fit(texts, labels)
+model = make_pipeline(TfidfVectorizer(), MultinomialNB())
+model.fit(texts, labels)
+
+# print the vectorized data
+# st.write(model.named_steps['tfidfvectorizer'].transform(texts).toarray())
 
 ################# STEP 1: Extract entities from the input text using spaCy
 
@@ -81,14 +84,14 @@ def main():
                 st.header("Extracted Entities:")
                 for entity in entities:
                     st.write(f"{entity[0]} ({entity[1]})")
-                    
+                     
                 # Classify the input text using the trained model
-                # prediction = model.predict([user_input])
-                # st.write(f"Classification Result: {prediction[0]}")
+                prediction = model.predict([user_input])
+                st.write(f"Classification Result: {prediction[0]}")
             else:
                 st.write("No entities found.")
         else:
-            st.write("Please enter some text.")
+            st.error("Please enter some text.")
 
 if __name__ == "__main__":
     main()
