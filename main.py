@@ -6,7 +6,15 @@ from sklearn.naive_bayes import MultinomialNB
 from sklearn.pipeline import make_pipeline
 import matplotlib.pyplot as plt
 import pandas as pd
+import json
+import openai
+from dotenv import load_dotenv
+import os
 
+load_dotenv()
+
+
+client = openai.Client(api_key=os.getenv("OPENAI_API_KEY"))
 # Load spaCy model for NLP tasks
 try:
     nlp = spacy.load('en_core_web_sm')
@@ -63,7 +71,8 @@ def plot_entity_classifications(entities, plot_type='Bar'):
 
 def main():
     st.title("NLP News Headline Entity Extraction and Classification App")
-    
+    entities = []
+
     # Sidebar for user inputs
     st.sidebar.title("Options")
     
@@ -82,8 +91,7 @@ def main():
             
             if entities:
                 st.header("Extracted Entities:")
-                for entity in entities:
-                    st.write(f"{entity[0]} ({entity[1]})")
+
                     
                 # Plot entity extraction results
                 plot_entity_classifications(entities, plot_type)
@@ -91,6 +99,32 @@ def main():
                 st.write("No entities found.")
         else:
             st.write("Please enter some text.")
+
+    if entities: 
+        with st.expander("View extracted entities"):
+            st.table(entities)
+
+
+            # Make the entities a string
+            entities_str = ', '.join([f'{ent[0]} ({ent[1]})' for ent in entities])
+            st.write(f"Entities: {entities_str}") 
+
+
+            # Run a GPT request to determine the headline based on the entities string:
+            messages = [
+                {"role": "user", "content": f"Please determine the headline based on the following entities: {entities_str}"}
+            ]
+            response = client.chat.completions.create(
+                model="gpt-4o",
+                messages=messages,
+                stream=False,
+            )
+            print(response)
+            output = json.loads(response.choices[0].message.content)
+            print(output)
+            st.write(f"Headline: {output}")
+
+
 
 if __name__ == "__main__":
     main()
